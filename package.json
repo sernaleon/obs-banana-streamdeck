@@ -1,0 +1,27 @@
+{
+  "name": "obs-banana-streamdeck",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "dependencies": {
+    "obs-websocket-js": "^4.0.2"
+  },
+  "devDependencies": {
+    "buffer": "^5.6.1",
+    "webpack": "^5.2.0",
+    "webpack-cli": "^4.1.0"
+  },
+  "scripts": {
+    "start": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sernaleon/obs-banana-streamdeck.git"
+  },
+  "author": "Arturo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sernaleon/obs-banana-streamdeck/issues"
+  },
+  "homepage": "https://github.com/sernaleon/obs-banana-streamdeck#readme"
+}
