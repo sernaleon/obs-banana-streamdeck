@@ -1,11 +1,12 @@
 export default class Messenger {
-  publish(event, data) {
-    const message = new CustomEvent(event, { detail: data });
-    window.dispatchEvent(message);
+  publish (event, data) {
+    const message = new CustomEvent(event, { detail: data })
+    window.dispatchEvent(message)
   }
-  subscribe(event, callback) {
+
+  subscribe (event, callback) {
     window.addEventListener(event, (e) => {
-      callback(e.detail);
-    });
+      callback(e.detail)
+    })
   }
 }

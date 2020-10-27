@@ -4105,59 +4105,65 @@ module.exports = Sha256
 
 // CONCATENATED MODULE: ./WebSrc/Messenger.js
 class Messenger {
-  publish(event, data) {
-    const message = new CustomEvent(event, { detail: data });
-    window.dispatchEvent(message);
+  publish (event, data) {
+    const message = new CustomEvent(event, { detail: data })
+    window.dispatchEvent(message)
   }
-  subscribe(event, callback) {
+
+  subscribe (event, callback) {
     window.addEventListener(event, (e) => {
-      callback(e.detail);
-    });
+      callback(e.detail)
+    })
   }
 }
 
 // CONCATENATED MODULE: ./WebSrc/EventNames.js
 /* harmony default export */ const EventNames = ({
-    ChangeScene : 'ChangeScene',
-    ReceivedScenes : 'ReceivedScenes',
-    Connect: 'Connect'
-  });
+  ChangeScene: 'ChangeScene',
+  ReceivedScenes: 'ReceivedScenes',
+  Connect: 'Connect'
+});
+
 // CONCATENATED MODULE: ./WebSrc/ComDevice.js
+/* global TextDecoderStream */
 
 
 
 class ComDevice {
-    constructor(messenger = new Messenger()) {
-        this.messenger = messenger;
-        this.messenger.subscribe(EventNames.Connect, () => this.connectAsync());
+  constructor (messenger = new Messenger()) {
+    this.messenger = messenger
+    this.messenger.subscribe(EventNames.Connect, () => this.connectAsync())
+  }
+
+  async connectAsync (baudRate = 115200) {
+    console.log('Opening COM with baudRate: ' + baudRate)
+    this.port = await navigator.serial.requestPort()
+    await this.port.open({ baudRate: baudRate })
+    const decoder = new TextDecoderStream()
+    this.port.readable.pipeTo(decoder.writable)
+    const inputStream = decoder.readable
+    this.reader = inputStream.getReader()
+    console.log('Serial port connected', this)
+    this.startReadingAsync()
+  }
+
+  async startReadingAsync () {
+    this.reading = true
+    while (this.reading) {
+      const { value, done } = await this.reader.read()
+      if (value) {
+        this.messenger.publish(EventNames.ChangeScene, parseInt(value))
+      }
+      if (done) {
+        this.stopReading()
+      }
     }
-    async connectAsync(baudRate = 115200) {
-        console.log('Opening COM with baudRate: '+ baudRate);
-        this.port = await navigator.serial.requestPort();
-        await this.port.open({ baudRate: baudRate });
-        const decoder = new TextDecoderStream();
-        this.port.readable.pipeTo(decoder.writable);
-        const inputStream = decoder.readable;
-        this.reader = inputStream.getReader();
-        console.log('Serial port connected', this);
-        this.startReadingAsync();
-    }
-    async startReadingAsync() {
-        this.reading = true;
-        while (this.reading) {
-            const { value, done } = await this.reader.read();
-            if (value) {
-                this.messenger.publish(EventNames.ChangeScene, parseInt(value));
-            }
-            if (done) {
-                this.stopReading();
-            }
-        }
-    }
-    stopReading() {
-        this.reader.releaseLock();
-        this.reading = false;
-    }
+  }
+
+  stopReading () {
+    this.reader.releaseLock()
+    this.reading = false
+  }
 }
 
 // CONCATENATED MODULE: ./WebSrc/View.js
@@ -4165,33 +4171,33 @@ class ComDevice {
 
 
 class View {
-  constructor(messenger = new Messenger()) {
-    this.messenger = messenger;
-    this.messenger.subscribe(EventNames.ReceivedScenes, (e) => this.drawSceneButtons(e));
-    document.getElementById('connect').addEventListener('click', () => this.connect());
+  constructor (messenger = new Messenger()) {
+    this.messenger = messenger
+    this.messenger.subscribe(EventNames.ReceivedScenes, (e) => this.drawSceneButtons(e))
+    document.getElementById('connect').addEventListener('click', () => this.connect())
   }
 
-  connect() {
+  connect () {
     this.messenger.publish(EventNames.Connect, {
       address: this.getAddress()
     })
   }
 
-  drawSceneButtons(data) {
-    console.log('Drawing scences', data);
-    const sceneListDiv = document.getElementById('scene_list');
+  drawSceneButtons (data) {
+    console.log('Drawing scences', data)
+    const sceneListDiv = document.getElementById('scene_list')
     for (let i = 0; i < data.scenes.length; i++) {
-      const sceneElement = document.createElement('button');
-      sceneElement.textContent = data.scenes[i].name;
+      const sceneElement = document.createElement('button')
+      sceneElement.textContent = data.scenes[i].name
       sceneElement.onclick = () => {
-        this.messenger.publish(EventNames.ChangeScene, i);
-      };
-      sceneListDiv.appendChild(sceneElement);
+        this.messenger.publish(EventNames.ChangeScene, i)
+      }
+      sceneListDiv.appendChild(sceneElement)
     }
   }
 
-  getAddress() {
-    return document.getElementById('address').value;
+  getAddress () {
+    return document.getElementById('address').value
   }
 }
 
@@ -4205,39 +4211,43 @@ var lib_default = /*#__PURE__*/__webpack_require__.n(lib);
 
 
 class Obs {
-  constructor(obs = new (lib_default())(), messenger = new Messenger()) {
-    this.obs = obs;
-    this.messenger = messenger;
-    this.messenger.subscribe(EventNames.Connect, (e) => this.connectAsync(e.address));
+  constructor (obs = new (lib_default())(), messenger = new Messenger()) {
+    this.obs = obs
+    this.messenger = messenger
+    this.messenger.subscribe(EventNames.Connect, (e) => this.connectAsync(e.address))
   }
-  async connectAsync(address) {
-      console.log('Connecting to obs on '+address);
-    this.messenger.subscribe(EventNames.ChangeScene, (e) => this.changeScene(e));
-    this.obs.connect({ address: address });
+
+  async connectAsync (address) {
+    console.log('Connecting to obs on ' + address)
+    this.messenger.subscribe(EventNames.ChangeScene, (e) => this.changeScene(e))
+    this.obs.connect({ address: address })
     this.obs.on('ConnectionOpened', () => {
       this.obs.send('GetSceneList').then(data => {
-        this.scenes = data.scenes;
-        console.log("Obs connected", this);
-        this.messenger.publish(EventNames.ReceivedScenes, data);
-      });
-    });
+        this.scenes = data.scenes
+        console.log('Obs connected', this)
+        this.messenger.publish(EventNames.ReceivedScenes, data)
+      })
+    })
   }
-  changeScene(index) {
+
+  changeScene (index) {
     this.obs.send('SetCurrentScene', {
       'scene-name': this.scenes[index].name
-    });
-    console.log("Changed to scene", index, this);
+    })
+    console.log('Changed to scene', index, this)
   }
 }
 
 // CONCATENATED MODULE: ./WebSrc/index.js
+/* eslint-disable no-new */
 
 
 
 
-new View(); //Create view interactions
-new Obs(); //Create OBS communication
-new ComDevice(); //Create external device (Arduino) comunication
+new View() // Create view interactions
+new Obs() // Create OBS communication
+new ComDevice() // Create external device (Arduino) comunication
+
 })();
 
 /******/ })()
