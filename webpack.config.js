@@ -4,7 +4,5 @@ module.exports = {
         filename: 'main.js',
         path: __dirname
     },
-    optimization: {
-        minimize: false
-    },
+    devtool: "eval-source-map"
 }
