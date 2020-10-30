@@ -19,7 +19,7 @@
   },
   "scripts": {
     "start": "webpack",
-    "dev": "webpack --watch" 
+    "dev": "webpack --watch"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 /**
- * Dead simple event bus. 
+ * Dead simple event bus.
  * It handles communication within JS components.
  */
 export default class Messenger {

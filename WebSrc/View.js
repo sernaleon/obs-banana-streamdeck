@@ -3,7 +3,7 @@ import EventNames from './EventNames'
 
 /**
  * Handles interaction with page.
- * 
+ *
  * Binds to the DOM and fires the events 'Connect' and 'ChangeScene'.
  */
 export default class View {
@@ -20,7 +20,6 @@ export default class View {
   }
 
   drawSceneButtons (data) {
-    console.log('Drawing scences', data)
     const sceneListDiv = document.getElementById('scene_list')
     for (let i = 0; i < data.scenes.length; i++) {
       const sceneElement = document.createElement('button')

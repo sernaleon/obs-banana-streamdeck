@@ -2,7 +2,8 @@
  * Events used by JS to intercomunicate between classes.
  */
 export default {
-  ChangeScene: 'ChangeScene',
+  Connect: 'Connect',
   ReceivedScenes: 'ReceivedScenes',
-  Connect: 'Connect'
+  SerialConnected: 'SerialConnected',
+  ChangeScene: 'ChangeScene'
 }
