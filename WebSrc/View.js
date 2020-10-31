@@ -9,29 +9,70 @@ import EventNames from './EventNames'
 export default class View {
   constructor (messenger = new Messenger()) {
     this.messenger = messenger
-    this.messenger.subscribe(EventNames.ReceivedScenes, (e) => this.drawSceneButtons(e))
-    document.getElementById('connect').addEventListener('click', () => this.connect())
+    this.bindElements()
+    this.bindEvents()
+  }
+
+  bindElements () {
+    this.errorElement = document.getElementById('error')
+    this.baudRateElement = document.getElementById('baudRate')
+    this.addressElement = document.getElementById('address')
+    this.connectElement = document.getElementById('connect')
+    this.disconnectElement = document.getElementById('disconnect')
+    this.sceneTitleElement = document.getElementById('sceneTitle')
+    this.sceneListElement = document.getElementById('sceneList')
+  }
+
+  bindEvents () {
+    this.messenger.subscribe(EventNames.ObsConnected, (e) => this.drawSceneButtons(e))
+    this.messenger.subscribe(EventNames.SerialConnected, () => this.showDisconnectButton())
+    this.messenger.subscribe(EventNames.Error, (e) => this.showError(e))
+    this.connectElement.addEventListener('click', () => this.connect())
+    this.disconnectElement.addEventListener('click', () => this.disconnect())
   }
 
   connect () {
     this.messenger.publish(EventNames.Connect, {
-      address: this.getAddress()
+      address: this.addressElement.value,
+      baudRate: this.baudRateElement.value
     })
   }
 
-  drawSceneButtons (data) {
-    const sceneListDiv = document.getElementById('scene_list')
-    for (let i = 0; i < data.scenes.length; i++) {
-      const sceneElement = document.createElement('button')
-      sceneElement.textContent = data.scenes[i].name
-      sceneElement.onclick = () => {
-        this.messenger.publish(EventNames.ChangeScene, i)
-      }
-      sceneListDiv.appendChild(sceneElement)
+  disconnect () {
+    this.messenger.publish(EventNames.Disonnect)
+    this.resetPage()
+  }
+
+  showError (e) {
+    this.errorElement.style.display = 'block'
+    this.errorElement.innerHTML = e
+    this.resetPage()
+  }
+
+  resetPage () {
+    this.sceneListElement.innerHTML = ''
+    this.sceneTitleElement.style.display = 'none'
+    this.disconnectElement.style.display = 'none'
+    this.connectElement.style.display = 'block'
+  }
+
+  showDisconnectButton () {
+    this.connectElement.style.display = 'none'
+    this.disconnectElement.style.display = 'block'
+  }
+
+  drawSceneButtons (scenes) {
+    this.sceneTitleElement.style.display = 'block'
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneElement = this.createSceneButton(scenes[i].name, i)
+      this.sceneListElement.appendChild(sceneElement)
     }
   }
 
-  getAddress () {
-    return document.getElementById('address').value
+  createSceneButton (name, id) {
+    const sceneElement = document.createElement('button')
+    sceneElement.textContent = name
+    sceneElement.onclick = () => this.messenger.publish(EventNames.ChangeScene, id)
+    return sceneElement
   }
 }

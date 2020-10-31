@@ -2,52 +2,66 @@
 import Messenger from './Messenger'
 import EventNames from './EventNames'
 
-const DEFAULT_BAUD_RATE = 115200
-
 /**
- * Reads bananas from Arduino
+ * Reads numbers from a Serial Device
  * using the new Serial Api (see https://wicg.github.io/serial).
  *
- * It listens to the 'Connect' event.
- * Once connected, it fires 'SerialConnected'.
- * When a COM message is received from Arduino
- * it sends the event 'ChangeScene'.
+ * Listens to Connect, Disconnect & Error.
+ * Fires SerialConnected, SerialMessageReceived & Error.
  */
 export default class ComDevice {
   constructor (messenger = new Messenger()) {
     this.messenger = messenger
     this.messenger.subscribe(EventNames.Connect, (data) => this.connectAsync(data.baudRate))
+    this.messenger.subscribe(EventNames.Disonnect, () => this.disconnectAsync())
+    this.messenger.subscribe(EventNames.Error, () => this.disconnectAsync())
   }
 
-  async connectAsync (baudRate = DEFAULT_BAUD_RATE) {
-    console.log('Opening COM with baudRate: ' + baudRate)
-    this.port = await navigator.serial.requestPort()
-    await this.port.open({ baudRate: baudRate })
-    const decoder = new TextDecoderStream()
-    this.port.readable.pipeTo(decoder.writable)
-    const inputStream = decoder.readable
-    this.reader = inputStream.getReader()
-    this.messenger.publish(EventNames.SerialConnected, this.port.getInfo())
-    console.log('Serial port connected', this.port.getInfo())
-    this.startReadingAsync()
-  }
-
-  async startReadingAsync () {
-    this.reading = true
-    while (this.reading) {
-      const { value, done } = await this.reader.read()
-      if (value) {
-        this.messenger.publish(EventNames.ChangeScene, parseInt(value))
-      }
-      if (done) {
-        await this.stopReadingAsync()
-      }
+  async connectAsync (baudRate) {
+    try {
+      console.log('Opening Serial with baudRate ' + baudRate)
+      this.port = await navigator.serial.requestPort()
+      await this.port.open({ baudRate: baudRate })
+      const decoder = new TextDecoderStream()
+      this.inputDone = this.port.readable.pipeTo(decoder.writable)
+      this.reader = decoder.readable.getReader()
+      this.messenger.publish(EventNames.SerialConnected, this.port.getInfo())
+      console.log('Serial port connected', this.port.getInfo())
+      this.startReadingAsync()
+    } catch (e) {
+      console.error(e)
+      this.messenger.publish(EventNames.Error, 'Cannot connect to Serial device.')
     }
   }
 
-  async stopReading () {
-    this.reader.releaseLock()
-    await this.port.close()
-    this.reading = false
+  async startReadingAsync () {
+    try {
+      this.reading = true
+      while (this.reading) {
+        const { value, done } = await this.reader.read()
+
+        if (done) {
+          return await this.disconnectAsync()
+        }
+
+        const id = parseInt(value)
+        if (!isNaN(id)) {
+          this.messenger.publish(EventNames.SerialMessageReceived, id)
+        }
+      }
+    } catch (e) {
+      console.error(e)
+      this.messenger.publish(EventNames.Error, 'Error reading Serial device.')
+    }
+  }
+
+  async disconnectAsync () {
+    if (this.reading) {
+      this.reading = false
+      await this.reader.cancel()
+      await this.inputDone.catch(() => {})
+      await this.port.close()
+      console.log('Serial disconnected')
+    }
   }
 }

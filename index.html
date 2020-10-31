@@ -1,14 +1,21 @@
 <html>
 <body>
-    <div>chrome://flags/#enable-experimental-web-platform-features must be set to true</div>
-
-    <h1>Connect</h1>
-    <input id="address" placeholder="Address" value="localhost:4444">
-    <button id="connect">Connect</button>
-
-    <h1>Scene List</h1>
-    <div id="scene_list"></div>
+    <p id="error" style="display: none; color: red;"></p>
+    <p>chrome://flags/#enable-experimental-web-platform-features must be set to true</p>
     
+    <p>
+        <label>Baud rate</label>
+        <input id="baudRate" placeholder="baudRate" type="number" value="115200">
+    </p>
+    <p>
+        <label>OBS WebSocket server</label>
+        <input id="address" placeholder="Address" value="localhost:4444">
+    </p>
+    <button id="connect">Connect</button>
+    <button id="disconnect" style="display: none;">Disconnect</button>
+
+    <h1 id="sceneTitle" style="display: none;">Scene List</h1>
+    <p id="sceneList"></p>
     <script src="main.js"></script>
 </body>
 </html>

@@ -3,7 +3,10 @@
  */
 export default {
   Connect: 'Connect',
-  ReceivedScenes: 'ReceivedScenes',
+  ObsConnected: 'ObsConnected',
   SerialConnected: 'SerialConnected',
-  ChangeScene: 'ChangeScene'
+  SerialMessageReceived: 'SerialMessageReceived',
+  ChangeScene: 'ChangeScene',
+  Disonnect: 'Disonnect',
+  Error: 'Error'
 }
