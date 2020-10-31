@@ -5,8 +5,8 @@ import EventNames from './EventNames'
 /**
  * OBS communicaion using WebSockets.
  *
- * Listens to Connect Disonnect & ChangeScene.
- * Fires ReceivedScenes & Error.
+ * Listens to Connect, Disconnect & ChangeScene.
+ * Fires ObsConnected & Error.
  */
 export default class Obs {
   constructor (obs = new OBSWebSocket(), messenger = new Messenger()) {
@@ -14,7 +14,7 @@ export default class Obs {
     this.messenger = messenger
     this.messenger.subscribe(EventNames.Connect, (e) => this.connectAsync(e.address))
     this.messenger.subscribe(EventNames.ChangeScene, (e) => this.changeScene(e))
-    this.messenger.subscribe(EventNames.Disonnect, () => this.disconnect())
+    this.messenger.subscribe(EventNames.Disconnect, () => this.disconnect())
   }
 
   async connectAsync (address) {

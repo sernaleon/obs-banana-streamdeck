@@ -7,6 +7,6 @@ export default {
   SerialConnected: 'SerialConnected',
   SerialMessageReceived: 'SerialMessageReceived',
   ChangeScene: 'ChangeScene',
-  Disonnect: 'Disonnect',
+  Disconnect: 'Disconnect',
   Error: 'Error'
 }

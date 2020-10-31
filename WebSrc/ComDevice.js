@@ -13,7 +13,7 @@ export default class ComDevice {
   constructor (messenger = new Messenger()) {
     this.messenger = messenger
     this.messenger.subscribe(EventNames.Connect, (data) => this.connectAsync(data.baudRate))
-    this.messenger.subscribe(EventNames.Disonnect, () => this.disconnectAsync())
+    this.messenger.subscribe(EventNames.Disconnect, () => this.disconnectAsync())
     this.messenger.subscribe(EventNames.Error, () => this.disconnectAsync())
   }
 

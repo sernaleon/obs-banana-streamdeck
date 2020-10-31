@@ -4,7 +4,8 @@ import EventNames from './EventNames'
 /**
  * Handles interaction with page.
  *
- * Binds to the DOM and fires the events 'Connect' and 'ChangeScene'.
+ * Listens to ObsConnected, SerialConnected and Error.
+ * Fires Connect, Disconnect & ChangeScene.
  */
 export default class View {
   constructor (messenger = new Messenger()) {
@@ -39,7 +40,7 @@ export default class View {
   }
 
   disconnect () {
-    this.messenger.publish(EventNames.Disonnect)
+    this.messenger.publish(EventNames.Disconnect)
     this.resetPage()
   }
 
